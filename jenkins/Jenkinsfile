@@ -1,45 +1,47 @@
 pipeline {
-    agent any
+  agent any
     
-    environment {  // to temat związany bezpośrednio z tym GO jeżeli chodzi o testy Backendowe
-        GOCACHE = "${WORKSPACE}/.cache/go-build"
-        GOPATH = "${WORKSPACE}/.go"
-    }
+  environment {  // to temat związany bezpośrednio z tym GO jeżeli chodzi o testy Backendowe
+      GOCACHE = "${WORKSPACE}/.cache/go-build"
+      GOPATH = "${WORKSPACE}/.go"
+  }
 
-    stages {
+  stages {
+    stage('Execute Unit Tests') {
+      parallel {
         stage('Unit Tests - Backend') {  // stages - tutaj wydzielamy konkretne jobs które mają być zrobione, czyli BE testy, FE testy itd.
-            agent {  // jeżeli jest potrzeba zaciągnąć obraz dockerowy, żeby odpalić jakieś testy to robi się to w agent
-              docker {
-                image 'snakee/golang-junit:1.21'
-                reuseNode true
-              }
+          agent {  // jeżeli jest potrzeba zaciągnąć obraz dockerowy, żeby odpalić jakieś testy to robi się to w agent
+            docker {
+              image 'snakee/golang-junit:1.21'
+              reuseNode true
             }
-            steps {
-              dir('bugtracker-backend') {  // definiujemy folder, gdzie będą odpalane testy i potem w sh definiujemy shell command który je odpala
-                 sh '''
-                     mkdir -p ${GOCACHE}
-                     mkdir -p ${GOPATH}
-                     go test -v ./... 2>&1 | go-junit-report > test-results.xml
+          }
+          steps {
+            dir('bugtracker-backend') {  // definiujemy folder, gdzie będą odpalane testy i potem w sh definiujemy shell command który je odpala
+               sh '''
+                   mkdir -p ${GOCACHE}
+                   mkdir -p ${GOPATH}
+                   go test -v ./... 2>&1 | go-junit-report > test-results.xml
 
-                     # Generate coverage report
-                     go test -coverprofile=coverage.out -covermode=atomic ./...
-                     go tool cover -html=coverage.out -o coverage.html
+                   # Generate coverage report
+                   go test -coverprofile=coverage.out -covermode=atomic ./...
+                   go tool cover -html=coverage.out -o coverage.html
 
-                     mkdir -p reports
-                     mv coverage.html reports/
-                 '''
-              }
+                   mkdir -p reports
+                   mv coverage.html reports/
+               '''
             }
-            post {
-              always {
-                junit 'bugtracker-backend/test-results.xml'
-                publishHTML target: [
-                  reportDir: 'bugtracker-backend/reports',
-                  reportFiles: 'coverage.html',
-                  reportName: 'Backend Coverage Report'
-                ]
-              }
+          }
+          post {
+            always {
+              junit 'bugtracker-backend/test-results.xml'
+              publishHTML target: [
+                reportDir: 'bugtracker-backend/reports',
+                reportFiles: 'coverage.html',
+                reportName: 'Backend Coverage Report'
+              ]
             }
+          }
         }
         stage('Unit tests - Frontend') {
           agent {
@@ -69,5 +71,7 @@ pipeline {
             }
           }
         }
+      }
     }
+  }
 }
