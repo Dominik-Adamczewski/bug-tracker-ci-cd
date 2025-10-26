@@ -1,21 +1,21 @@
 pipeline {
     agent any
     
-    environment {
+    environment {  // to temat związany bezpośrednio z tym GO jeżeli chodzi o testy Backendowe
         GOCACHE = "${WORKSPACE}/.cache/go-build"
         GOPATH = "${WORKSPACE}/.go"
     }
 
     stages {
-        stage('Unit Tests - Backend') {
-            agent {
+        stage('Unit Tests - Backend') {  // stages - tutaj wydzielamy konkretne jobs które mają być zrobione, czyli BE testy, FE testy itd.
+            agent {  // jeżeli jest potrzeba zaciągnąć obraz dockerowy, żeby odpalić jakieś testy to robi się to w agent
               docker {
                 image 'snakee/golang-junit:1.21'
                 reuseNode true
               }
             }
             steps {
-              dir('bugtracker-backend') {
+              dir('bugtracker-backend') {  // definiujemy folder, gdzie będą odpalane testy i potem w sh definiujemy shell command który je odpala
                  sh '''
                      mkdir -p ${GOCACHE}
                      mkdir -p ${GOPATH}
@@ -37,6 +37,11 @@ pipeline {
                   npm ci
                   npm test
               '''
+            }
+          }
+          post { // post działa w taki sposób, że będzie odpalony po wszystkich steps które zrobimy
+            always {  // to definuje, że bd odpalali ten kawałek pipelina zawsze - nawet jak jakiś test u góry w którymś stepie zfailuje
+              junit 'bugtracker-frontend/test-results.xml'
             }
           }
         }
