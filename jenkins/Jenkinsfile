@@ -53,12 +53,19 @@ pipeline {
               sh '''
                   npm ci
                   npm test
+                  mkdir -p reports
+                  mv coverage reports/
               '''
             }
           }
           post { // post działa w taki sposób, że będzie odpalony po wszystkich steps które zrobimy
             always {  // to definuje, że bd odpalali ten kawałek pipelina zawsze - nawet jak jakiś test u góry w którymś stepie zfailuje
               junit 'bugtracker-frontend/test-results.xml'
+              publishHTML target: [
+                reportDir: 'bugtracker-frontend/reports/coverage',
+                reportFiles: 'index.html',
+                reportName: 'Frontend Coverage Report'
+              ]
             }
           }
         }
