@@ -90,7 +90,7 @@ pipeline {
         docker {
           image 'mcr.microsoft.com/playwright:v1.56.1-noble'
           reuseNode true
-          args '-u 0 -network=host'
+          args '-u 0 --network=host'
         }
       }
       steps {
