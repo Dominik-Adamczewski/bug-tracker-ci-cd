@@ -41,3 +41,11 @@ jobs:
         run: |
           npm ci
           npm test
+
+      - name: Publish Frontend test results
+        uses: dorny/test-reporter@v1
+        if: always()  # to trzeba dodać, żeby zawsze raport się generował, nawet jak test zfailuje
+        with:
+          name: Frontend Unit Tests report
+          path: bugtracker-frontend/test-results.xml
+          reporter: jest-junit
