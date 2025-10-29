@@ -4,6 +4,9 @@ on:
   push:
     branches: # definiujemy branche do których push bd odpalał workflow
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
