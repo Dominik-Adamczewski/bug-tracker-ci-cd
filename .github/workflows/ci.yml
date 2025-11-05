@@ -257,13 +257,13 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Install Playwright
-        working-directory: ./tests/e2e
+        working-directory: ./tests-e2e
         run: |
           npm ci
           npx playwright install
 
       - name: Run Post Deployment Tests
-        working-directory: ./tests/e2e
+        working-directory: ./tests-e2e
         env: 
           PLAYWRIGHT_TEST_BASE_URL: "https://bugtracker-staging-dominik-adamczewski.fly.dev"
         run: |
